@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>extract data example</title>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="./jsExtractData.js"></script>
+    <script type="text/javascript">
+        $.fn.extractData.type.CustomType = function () {
+			
+            return $(this).html();
+        }
+
+        function GetType(obj) {
+            return Object.prototype.toString.apply(obj).match(/^\[object\s(.*)\]$/)[1];
+        };
+        function getSpan(str) {
+            return "<div style='margin-left: 20px;'>" + str + "</div>";
+        }
+        function FormatJson(json) {
+            var type = GetType(json);
+            switch (type) {
+                case "Array":
+                    var str = "[";
+                    str += json.map(function (item) {
+                        return getSpan(FormatJson(item));
+                    }).join("");
+                    str += "]";
+                    return str;
+                case "Object":
+                    var str = "{";
+                    for (var key in json) {
+                        str += getSpan(key + ":" + FormatJson(json[key]));
+                    }
+                    str += "},";
+                    return str;
+                default:
+                    return JSON.stringify(json) + ",";
+            }
+        }
+        $(function () {
+            $("#extract").click(function (e) {
+                var data = $("#target").extractData();//$("#target").extractData("JObject")
+                $("#showData").html(FormatJson(data));
+            })
+        })
+    </script>
+    <style type="text/css">
+        .style1 > * {
+            margin-left: 20px;
+        }
+            .style1 > * > * {
+                margin-left: 20px;
+            }
+        .green {
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="target" data-type="JObject">
+        <p>user input:<input name="user_input" placeholder="user input"/></p>
+        <p>html data:<span name="html_data" class="green">I will be extracted.</span></p>
+        <p>custom type:<span name="custom_type" data-type="CustomType">guess what?</span></p>
+        <div class="style1" data-name="struct_data" data-type="JObject">struct data:
+            <p>choose some language you like:
+                <input name="like_language" type="checkbox" data-type="JCheckbox" value="c#" />c#
+                <input name="like_language" type="checkbox" data-type="JCheckbox" value="javascript" />javascript
+                <input name="like_language" type="checkbox" data-type="JCheckbox" value="php" />php
+                <input name="like_language" type="checkbox" data-type="JCheckbox" value="python" />python
+                <input name="like_language" type="checkbox" data-type="JCheckbox" value="java" />java
+            </p>
+            <p>choose your favorite language:
+                <input name="favorite_language" type="radio" value="c#"/>c#
+                <input name="favorite_language" type="radio" value="javascript" />javascript
+                <input name="favorite_language" type="radio" value="php" />php
+                <input name="favorite_language" type="radio" value="python" />python
+                <input name="favorite_language" type="radio" value="java" />java
+            </p>
+        </div>
+        <div data-name="array_data" data-type="JArray" class="style1">array data:
+            <p data-type="JValue" class="green">first item of array</p>
+            <p data-type="JNumber" class="green">2333.3</p>
+            <div>last item:
+                <div data-type="JObject">
+                    <p>
+                        <input name="choose_me" type="checkbox" />choose me
+                        <input name="do_not_choose_me" type="checkbox" />do not choose me
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p><button id="extract">click to extract data</button></p>
+    <div id="showData"></div>
+</body>
+</html>
